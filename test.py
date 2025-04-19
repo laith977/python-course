@@ -1,5 +1,6 @@
 import tornado.web
 import tornado.ioloop
+import json
 
 
 class basicRequestHandler(tornado.web.RequestHandler):
@@ -10,6 +11,28 @@ class basicRequestHandler(tornado.web.RequestHandler):
 class listRequestHandler(tornado.web.RequestHandler):
     def get(self):
         self.render("index.html")
+
+
+class fruitListRequestHandler(tornado.web.RequestHandler):
+    def get(self):
+        fh = open("list.txt", "r")
+
+        fruits = fh.read().splitlines()
+        fh.close()
+        self.write(json.dumps(fruits))
+
+    def post(self):
+        fruit = self.get_argument("fruit")
+        fh = open("list.txt", "a")
+        fh.write(fruit + "\n")
+        fh.close()
+        self.write(json.dumps({"status": "success", "fruit": fruit}))q
+
+
+class resourceParamRequestHandler(tornado.web.RequestHandler):
+    def get(self, student_name, courseId):
+
+        self.write(f"Welcome {student_name}, you are viewing courseId{courseId} .")
 
 
 class queryParamRequestHandler(tornado.web.RequestHandler):
@@ -30,7 +53,9 @@ if __name__ == "__main__":
         [
             (r"/", basicRequestHandler),
             (r"/animal", listRequestHandler),
+            (r"/fruits", fruitListRequestHandler),
             (r"/isEven", queryParamRequestHandler),
+            (r"/students/([a-z]+)/([0-9]+)", resourceParamRequestHandler),
         ]
     )
     port = 8865
